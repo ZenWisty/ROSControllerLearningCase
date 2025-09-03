@@ -1,2 +1,2 @@
 # ROSControllerLearningCase
-Contains a ROS project with tutorial 
+Contains a ROS2 project with tutorial 
