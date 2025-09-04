@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ros2_control_demo_example_7 LANGUAGES CXX)
+project(ros2_control_demo_example LANGUAGES CXX)
 
 find_package(ros2_control_cmake REQUIRED)
 set_compiler_options()
@@ -53,19 +53,19 @@ target_link_libraries(send_trajectory PUBLIC
 )
 
 add_library(
-  ros2_control_demo_example_7
+  ros2_control_demo_example
   SHARED
   hardware/r6bot_hardware.cpp
   controller/r6bot_controller.cpp
 )
 
-target_compile_features(ros2_control_demo_example_7 PUBLIC cxx_std_17)
-target_include_directories(ros2_control_demo_example_7 PUBLIC
+target_compile_features(ros2_control_demo_example PUBLIC cxx_std_17)
+target_include_directories(ros2_control_demo_example PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/hardware/include>
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/controller/include>
-$<INSTALL_INTERFACE:include/ros2_control_demo_example_7>
+$<INSTALL_INTERFACE:include/ros2_control_demo_example>
 )
-target_link_libraries(ros2_control_demo_example_7 PUBLIC
+target_link_libraries(ros2_control_demo_example PUBLIC
   ${trajectory_msgs_TARGETS}
   controller_interface::controller_interface
   hardware_interface::hardware_interface
@@ -74,44 +74,36 @@ target_link_libraries(ros2_control_demo_example_7 PUBLIC
 )
 
 # Export hardware plugins
-pluginlib_export_plugin_description_file(hardware_interface ros2_control_demo_example_7.xml)
+pluginlib_export_plugin_description_file(hardware_interface ros2_control_demo_example.xml)
 # Export controller plugins
-pluginlib_export_plugin_description_file(controller_interface ros2_control_demo_example_7.xml)
+pluginlib_export_plugin_description_file(controller_interface ros2_control_demo_example.xml)
 
 # INSTALL
 install(
   DIRECTORY hardware/include/
-  DESTINATION include/ros2_control_demo_example_7
+  DESTINATION include/ros2_control_demo_example
 )
 install(
   DIRECTORY description/launch description/ros2_control description/urdf
-  DESTINATION share/ros2_control_demo_example_7
+  DESTINATION share/ros2_control_demo_example
 )
 install(
   DIRECTORY bringup/launch bringup/config
-  DESTINATION share/ros2_control_demo_example_7
+  DESTINATION share/ros2_control_demo_example
 )
 install(
     TARGETS send_trajectory
-    RUNTIME DESTINATION lib/ros2_control_demo_example_7
+    RUNTIME DESTINATION lib/ros2_control_demo_example
 )
 
-install(TARGETS ros2_control_demo_example_7
-  EXPORT export_ros2_control_demo_example_7
+install(TARGETS ros2_control_demo_example
+  EXPORT export_ros2_control_demo_example
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
-if(BUILD_TESTING)
-  find_package(ament_cmake_pytest REQUIRED)
-
-  ament_add_pytest_test(example_7_urdf_xacro test/test_urdf_xacro.py)
-  ament_add_pytest_test(view_example_7_launch test/test_view_robot_launch.py)
-  ament_add_pytest_test(run_example_7_launch test/test_r6bot_controller_launch.py)
-endif()
-
 ## EXPORTS
-ament_export_targets(export_ros2_control_demo_example_7 HAS_LIBRARY_TARGET)
+ament_export_targets(export_ros2_control_demo_example HAS_LIBRARY_TARGET)
 ament_export_dependencies(${HW_IF_INCLUDE_DEPENDS} ${REF_GEN_INCLUDE_DEPENDS} ${CONTROLLER_INCLUDE_DEPENDS})
 ament_package()

@@ -8,7 +8,7 @@ controller_manager:
 
 r6bot_controller:
   ros__parameters:
-    type: ros2_control_demo_example_7/RobotController
+    type: ros2_control_demo_example/RobotController
     joints:
       - joint_1
       - joint_2

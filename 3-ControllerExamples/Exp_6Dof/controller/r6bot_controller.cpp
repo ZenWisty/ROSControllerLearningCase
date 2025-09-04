@@ -1,18 +1,4 @@
-// Copyright 2023 ros2_control Development Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#include "ros2_control_demo_example_7/r6bot_controller.hpp"
+#include "ros2_control_demo_example/r6bot_controller.hpp"
 
 #include <stddef.h>
 #include <algorithm>
@@ -27,12 +13,13 @@
 
 using config_type = controller_interface::interface_configuration_type;
 
-namespace ros2_control_demo_example_7
+namespace ros2_control_demo_example
 {
 RobotController::RobotController() : controller_interface::ControllerInterface() {}
 
 controller_interface::CallbackReturn RobotController::on_init()
 {
+  // 初始化所有在 r6bot_controller.yaml 中定义的 ros__parameter_ 内容，存入 controller
   // should have error handling
   joint_names_ = auto_declare<std::vector<std::string>>("joints", joint_names_);
   command_interface_types_ =
@@ -56,6 +43,7 @@ controller_interface::InterfaceConfiguration RobotController::command_interface_
   {
     for (const auto & interface_type : command_interface_types_)
     {
+      //所有组合： "joint_1/position", "joint_1/velocity", "joint_2/position", ... "joint_6/velocity"
       conf.names.push_back(joint_name + "/" + interface_type);
     }
   }
@@ -72,6 +60,7 @@ controller_interface::InterfaceConfiguration RobotController::state_interface_co
   {
     for (const auto & interface_type : state_interface_types_)
     {
+      // "joint_1/position", "joint_1/velocity", "joint_2/position", ... "joint_6/velocity"
       conf.names.push_back(joint_name + "/" + interface_type);
     }
   }
@@ -84,6 +73,22 @@ controller_interface::CallbackReturn RobotController::on_configure(const rclcpp_
   auto callback = [this](const trajectory_msgs::msg::JointTrajectory traj_msg) -> void
   {
     RCLCPP_INFO(get_node()->get_logger(), "Received new trajectory.");
+    //注意，在ros2 humble 版本中，下面这一行写作 traj_msg_external_point_ptr_.writeFromNonRT(traj_msg);
+    //humble 与 jazzy有差别的原因是：
+    //从 Humble 到 Jazzy，ros2_control 把“实时-安全消息中转站”全部换成了新的 realtime_tools::RealtimeBuffer（简称 RTB）模板类，而不再使用旧的 realtime_tools::RealtimePublisher + writeFromNonRT() 机制。
+    // Humble 时代
+    // 控制器里通常有一个
+    // realtime_tools::RealtimePublisher<trajectory_msgs::msg::JointTrajectory>::Ptr traj_msg_external_point_ptr_;
+    // 它内部自带一个线程安全的 FIFO，非实时线程用 writeFromNonRT(msg) 把消息塞进去，实时线程在 update() 里再用 readFromRT() 取出来。
+    // 这套 API 名字里还带 “Publisher”，容易让人误以为它只是发话题，其实被拿来当“跨线程队列”用。
+    // Jazzy 开始
+    // ros2_control 统一改用 realtime_tools::RealtimeBuffer<T>。
+    // 这是一个更轻量、语义更清晰的“实时缓冲区”——非实时侧 set()，实时侧 get()，内部只有一块互斥锁保护的双缓冲，拷贝一次就完事。
+    // 于是原来的
+    // traj_msg_external_point_ptr_.writeFromNonRT(traj_msg);
+    // 被直接替换成
+    // traj_msg_external_.set(traj_msg);
+    // （traj_msg_external_ 类型现在是 realtime_tools::RealtimeBuffer<trajectory_msgs::msg::JointTrajectory::SharedPtr>）。
     traj_msg_external_.set(traj_msg);
     new_msg_ = true;
   };
@@ -103,6 +108,7 @@ controller_interface::CallbackReturn RobotController::on_activate(const rclcpp_l
   joint_position_state_interface_.clear();
   joint_velocity_state_interface_.clear();
 
+  // 初始化成一个合理值
   // assign command interfaces
   for (auto & interface : command_interfaces_)
   {
@@ -162,6 +168,7 @@ void interpolate_trajectory_point(
 controller_interface::return_type RobotController::update(
   const rclcpp::Time & time, const rclcpp::Duration & /*period*/)
 {
+  // 只有在 内置 new_msg_ 为 true 时，才代表需要更新一系列的 trajectory point
   if (new_msg_)
   {
     auto trajectory_msg_op = traj_msg_external_.try_get();
@@ -176,6 +183,7 @@ controller_interface::return_type RobotController::update(
   if (!trajectory_msg_.points.empty())
   {
     bool reached_end;
+    // 为了平滑移动，按时间等比例分，确定当前应当到达的位置
     interpolate_trajectory_point(trajectory_msg_, time - start_time_, point_interp_, reached_end);
 
     // If we have reached the end of the trajectory, reset it..
@@ -211,9 +219,11 @@ controller_interface::CallbackReturn RobotController::on_deactivate(const rclcpp
   return CallbackReturn::SUCCESS;
 }
 
-}  // namespace ros2_control_demo_example_7
+}  // namespace ros2_control_demo_example
 
+
+// 为了导出 plugin，方便在 launch files 中好指定以供 controller manager 来 spawn
 #include "pluginlib/class_list_macros.hpp"
 
 PLUGINLIB_EXPORT_CLASS(
-  ros2_control_demo_example_7::RobotController, controller_interface::ControllerInterface)
+  ros2_control_demo_example::RobotController, controller_interface::ControllerInterface)
