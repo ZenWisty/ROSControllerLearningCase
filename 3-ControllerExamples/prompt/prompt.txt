@@ -1,0 +1,25 @@
+你是一名 ROS 2 控制工程师，请根据以下信息生成一条可直接复制执行的 ros2 topic pub 命令，使机器人完成任务。
+除命令外不要输出任何解释。
+1. 机器人描述
+  ○ 型号：6-DOF 协作臂 "xArm6"
+  ○ URDF 关节顺序与限位（rad）：
+joint1 [-3.14, 3.14]
+joint2 [-2.06, 2.06]
+joint3 [-2.97, 2.97]
+joint4 [-3.49, 3.49]
+joint5 [-2.06, 2.06]
+joint6 [-6.28, 6.28]
+  ○ 控制接口：
+Topic 名称 /xarm6/joint_traj_controller/joint_trajectory
+类型 trajectory_msgs/msg/JointTrajectory
+需要一次发送 6 个关节角度（弧度），duration 统一取 3.0 s。
+2. 场景约束
+  ○ 工具中心点 (TCP) 必须水平向右（y 轴正方向）伸出 0.4 m，高度 z=0.25 m，不碰撞前方 0.5 m 处的虚拟墙。
+  ○ 所有关节速度 ≤ 0.5 rad/s。
+3. 用户任务（自然语言）
+"让机械臂末端水平向右伸 40 cm，离地 25 cm，保持末端姿态水平（即 joint6=0），3 秒内到达。"
+4. 输出格式
+仅返回一行 ros2 topic pub 命令，后跟 1 行中文注释（以 # 开头）。
+例：
+ros2 topic pub -1 /xarm6/joint_traj_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory ...
+#末端水平右伸 40 cm，离地 25 cm，3 秒到达

@@ -12,7 +12,7 @@ def generate_launch_description():
             " ",
             PathJoinSubstitution(
                 [
-                    FindPackageShare("ros2_control_demo_example_7"),
+                    FindPackageShare("ros2_control_demo_example"),
                     "urdf",
                     "r6bot.urdf.xacro",
                 ]
@@ -22,7 +22,7 @@ def generate_launch_description():
     robot_description = {"robot_description": robot_description_content}
 
     send_trajectory_node = Node(
-        package="ros2_control_demo_example_7",
+        package="ros2_control_demo_example",
         executable="send_trajectory",
         name="send_trajectory_node",
         parameters=[robot_description],
