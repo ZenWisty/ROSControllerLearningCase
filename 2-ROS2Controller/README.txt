@@ -11,7 +11,15 @@
         CMakeLists.txt (insure each build requirements as been added in)
         add build requirements in package.xml
       these are files that necessary for an custom controller implementation.
-    2)
+    2)The paramters name in function on_init(), which defined in src/my_controller.cpp, should be aligned with that lies in my_controller_pugin.xml:
+        (1) joint_names_ = auto_declare<std::vector<std::string>>("joints", {});
+            interface_name_ = auto_declare<std::string>("interface_name", "position");
+            coefficient_ = auto_declare<double>("coefficient", 0.8); 
+        (2) my_arm_controller:
+                ros__parameters:
+                    joints: ["arm_joint1", "arm_joint2"]
+                    interface_name: "position"
+                    coefficient: 0.05
     3)For ROS2 invoke, the controller has to be built as a plugin:
         add lines in src/my_controller.cpp: PLUGINLIB_EXPORT_CLASS(<export class>, <base class for export class>)
         add lines in CmakeLists.txt: pluginlib_export_plugin_description_file(controller_interface my_controller_plugin.xml)
