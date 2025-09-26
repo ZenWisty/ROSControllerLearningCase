@@ -2,14 +2,14 @@
 
 ### Project Overview
 
-1. my_robot_description: 用于描述机械臂的urdf 模型, 包括 controller.xacro 关键信息
-2. my_robot_moveit_config: 由 moveit GUI 工具包生成的内一个工程，此处已经在构建完 my_robot_description 工程后配置好，可直接搬运使用，无须编辑。
-3. my_robot_interface: 包含需要用到的一个自定义interface
-4. my_robot_commander_cpp: 包含了使用 moveit cpp api 开发的若干的交互接口和subscriber，用于控制机械臂：<br>
+1. ./src/my_robot_description: 用于描述机械臂的urdf 模型, 包括 controller.xacro 关键信息
+2. ./src/my_robot_moveit_config: 由 moveit GUI 工具包生成的内一个工程，此处已经在构建完 my_robot_description 工程后配置好，可直接搬运使用，无须编辑。
+3. ./src/my_robot_interface: 包含需要用到的一个自定义interface
+4. ./src/my_robot_commander_cpp: 包含了使用 moveit cpp api 开发的若干的交互接口和subscriber，用于控制机械臂：<br>
     Commander::OpenGripperCallback<br>
     Commander::JointCmdCallback<br>
     Commander::PoseCmdCallback<br>
-5. my_robot_bringup: 用于启动机械臂的bringup 包
+5. ./src/my_robot_bringup: 用于启动机械臂的bringup 包
 
 ### Demo 使用方法
 提供一个简单的demo可以快速测试工程，在安装了 ROS2 jazzy 和 moveit 的环境中。(建议 Ubuntu 22.04 )<br>
